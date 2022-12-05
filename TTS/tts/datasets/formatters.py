@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from glob import glob
 from pathlib import Path
 from typing import List
+import json
 
 import pandas as pd
 from tqdm import tqdm
@@ -591,4 +592,18 @@ def kss(root_path, meta_file, **kwargs):  # pylint: disable=unused-argument
             wav_file = os.path.join(root_path, cols[0])
             text = cols[2]  # cols[1] => 6월, cols[2] => 유월
             items.append({"text": text, "audio_file": wav_file, "speaker_name": speaker_name})
+    return items
+
+
+def dailytalk(root_path, meta_file, **kwargs):  # pylint: disable=unused-argument
+    """DailyTalk dataset"""
+    txt_file = os.path.join(root_path, meta_file)
+    items = []
+    with open(txt_file, "r", encoding="utf-8") as ttf:
+        data = json.load(ttf)
+        for i, dialog in data.items():
+            for j, utt in dialog.items():
+                speaker = str(utt["speaker"])
+                wav_file = os.path.join(root_path, "data", i, f"{j}_{speaker}_d{i}.wav")
+                items.append({"text": utt["text"], "audio_file": wav_file, "speaker_name": speaker, "root_path": root_path})
     return items
